@@ -91,8 +91,12 @@
       });
 
       const saved = localStorage.getItem('projects');
-      projects = saved ? JSON.parse(saved) : defaultProjects;
-      localStorage.setItem('projects', JSON.stringify(projects));
+      if (saved) {
+        projects = JSON.parse(saved);
+      } else {
+        projects = defaultProjects;
+        localStorage.setItem('projects', JSON.stringify(projects));
+      }
 
       loadProjectsToMapAndTable();
     }
