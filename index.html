@@ -71,7 +71,7 @@
     <h3>Project List</h3>
     <table>
       <thead>
-        <tr><th>Client</th><th>Project Name</th><th>Address</th><th>Import/Export</th><th>Material Type</th><th>Volume</th></tr>
+        <tr><th>Client</th><th>Project Name</th><th>Address</th><th>Import/Export</th><th>Material Type</th><th>Volume</th><th>Actions</th></tr>
       </thead>
       <tbody id="projectTableBody"></tbody>
     </table>
@@ -117,14 +117,8 @@
 
       projects.forEach((proj, index) => {
         const row = document.createElement("tr");
-        row.innerHTML = `
-          <td contenteditable oninput="updateField(${index}, 'client', this.textContent)">${proj.client}</td>
-          <td contenteditable oninput="updateField(${index}, 'projectName', this.textContent)">${proj.projectName}</td>
-          <td contenteditable oninput="updateField(${index}, 'address', this.textContent)">${proj.address}</td>
-          <td contenteditable oninput="updateField(${index}, 'importExport', this.textContent)">${proj.importExport}</td>
-          <td contenteditable oninput="updateField(${index}, 'materialType', this.textContent)">${proj.materialType}</td>
-          <td contenteditable oninput="updateField(${index}, 'volume', this.textContent)">${proj.volume}</td>
-        `;
+        row.innerHTML = `
+          <td><button onclick="startEdit(${index})">Edit</button></td>`;
         document.getElementById("projectTableBody").appendChild(row);
 
         geocoder.geocode({ address: proj.address }, (results, status) => {
@@ -190,6 +184,33 @@
       projects[index][field] = value.trim();
       localStorage.setItem("projects", JSON.stringify(projects));
       if (field === 'address') renderProjects();
+    }
+
+    function startEdit(index) {
+      const proj = projects[index];
+      const row = document.getElementById("projectTableBody").children[index];
+
+      row.innerHTML = `
+        <td><input value="${proj.client}" onchange="updateField(${index}, 'client', this.value)"></td>
+        <td><input value="${proj.projectName}" onchange="updateField(${index}, 'projectName', this.value)"></td>
+        <td><input value="${proj.address}" onchange="updateField(${index}, 'address', this.value)"></td>
+        <td>
+          <select onchange="updateField(${index}, 'importExport', this.value)">
+            <option value="">Select Import/Export</option>
+            <option value="Import" ${proj.importExport === 'Import' ? 'selected' : ''}>Import</option>
+            <option value="Export" ${proj.importExport === 'Export' ? 'selected' : ''}>Export</option>
+          </select>
+        </td>
+        <td>
+          <select multiple onchange="updateField(${index}, 'materialType', Array.from(this.selectedOptions).map(o => o.value).join(', '))">
+            ${['Clean Fill','Unsuitable','Top Soil','Rock','Road Base','Concrete','Asphalt','Inert'].map(type => `
+              <option value="${type}" ${proj.materialType.includes(type) ? 'selected' : ''}>${type}</option>
+            `).join('')}
+          </select>
+        </td>
+        <td><input value="${proj.volume}" onchange="updateField(${index}, 'volume', this.value)"></td>
+        <td><button onclick="renderProjects()">Done</button></td>
+      `;
     }
 
     window.initMap = initMap;
