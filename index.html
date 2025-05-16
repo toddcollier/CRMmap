@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>CRMmap</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&callback=initMap" async defer></script>
+  &libraries=places" async defer></script>
   <style>
     body {
       margin: 0;
@@ -48,16 +48,19 @@
       <option value="Import">Import</option>
       <option value="Export">Export</option>
     </select>
-    <div id="materialTypeOptions">
-      <strong>Material Type:</strong><br>
-      <label><input type="checkbox" value="Clean Fill"> Clean Fill</label>
-      <label><input type="checkbox" value="Unsuitable"> Unsuitable</label>
-      <label><input type="checkbox" value="Top Soil"> Top Soil</label>
-      <label><input type="checkbox" value="Rock"> Rock</label>
-      <label><input type="checkbox" value="Road Base"> Road Base</label>
-      <label><input type="checkbox" value="Concrete"> Concrete</label>
-      <label><input type="checkbox" value="Asphalt"> Asphalt</label>
-      <label><input type="checkbox" value="Inert"> Inert</label>
+    <div style="position: relative; display: inline-block;">
+      <button type="button" onclick="toggleMaterialDropdown()">Select Material Type(s)</button>
+      <div id="materialDropdown" style="display:none; position: absolute; background: #fff; border: 1px solid #ccc; padding: 10px; z-index: 10;">
+        <strong>Material Type:</strong><br>
+        <label><input type="checkbox" value="Clean Fill"> Clean Fill</label><br>
+        <label><input type="checkbox" value="Unsuitable"> Unsuitable</label><br>
+        <label><input type="checkbox" value="Top Soil"> Top Soil</label><br>
+        <label><input type="checkbox" value="Rock"> Rock</label><br>
+        <label><input type="checkbox" value="Road Base"> Road Base</label><br>
+        <label><input type="checkbox" value="Concrete"> Concrete</label><br>
+        <label><input type="checkbox" value="Asphalt"> Asphalt</label><br>
+        <label><input type="checkbox" value="Inert"> Inert</label><br>
+      </div>
     </div>
     <input id="volume" placeholder="Volume">
     <button onclick="addProject()">Add Project</button>
@@ -82,6 +85,9 @@
     const defaultProjects = [];
 
     function initMap() {
+      const addressInput = document.getElementById("address");
+      const autocomplete = new google.maps.places.Autocomplete(addressInput, { componentRestrictions: { country: 'au' } });
+      autocomplete.setFields(["formatted_address"]);
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: -27.4, lng: 152.9 }
@@ -160,8 +166,12 @@
       }
     }
 
+    function toggleMaterialDropdown() {
+      const dropdown = document.getElementById("materialDropdown");
+      dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+
     window.initMap = initMap;
   </script>
 </body>
 </html>
-Updated form with dropdowns and checkboxes
