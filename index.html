@@ -62,6 +62,7 @@
   <script>
     let map;
     const geocoder = new google.maps.Geocoder();
+    const markers = [];
 
     const defaultProjects = [
       { client: "Terreco", projectType: "Tip", status: "Live", plusCode: "P238+7Q Bald Hills, Queensland" },
@@ -83,6 +84,12 @@
     }
 
     function loadProjectsToMapAndTable() {
+      // Clear table
+      document.getElementById("projectTableBody").innerHTML = "";
+      // Clear old markers
+      markers.forEach(marker => marker.setMap(null));
+      markers.length = 0;
+
       const storedProjects = getStoredProjects();
       storedProjects.forEach(proj => {
         placeMarker(proj);
@@ -109,8 +116,7 @@
       storedProjects.push(newProject);
       saveProjects(storedProjects);
 
-      placeMarker(newProject);
-      addToTable(newProject);
+      loadProjectsToMapAndTable();
 
       document.getElementById('client').value = '';
       document.getElementById('projectType').value = '';
@@ -126,6 +132,8 @@
             position: results[0].geometry.location,
             title: project.client
           });
+
+          markers.push(marker);
 
           const info = new google.maps.InfoWindow({
             content: `<b>${project.client}</b><br>${project.projectType} - ${project.status}<br>${project.plusCode}`
@@ -151,7 +159,8 @@
 
       tableBody.appendChild(row);
     }
+
+    window.initMap = initMap;
   </script>
 </body>
 </html>
-window.initMap = initMap;
