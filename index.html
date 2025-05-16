@@ -13,9 +13,12 @@
       background: #f4f4f4;
       border-bottom: 1px solid #ccc;
     }
-    #form input, #form button {
+    #form input, #form select, #form button {
       margin: 5px;
       padding: 5px;
+    }
+    #materialTypeOptions label {
+      display: block;
     }
     #map {
       height: 70vh;
@@ -38,9 +41,25 @@
 <body>
   <div id="form">
     <input id="client" placeholder="Client">
-    <input id="projectType" placeholder="Project Type">
-    <input id="status" placeholder="Status">
-    <input id="plusCode" placeholder="Plus Code">
+    <input id="projectName" placeholder="Project Name">
+    <input id="address" placeholder="Address">
+    <select id="importExport">
+      <option value="">Select Import/Export</option>
+      <option value="Import">Import</option>
+      <option value="Export">Export</option>
+    </select>
+    <div id="materialTypeOptions">
+      <strong>Material Type:</strong><br>
+      <label><input type="checkbox" value="Clean Fill"> Clean Fill</label>
+      <label><input type="checkbox" value="Unsuitable"> Unsuitable</label>
+      <label><input type="checkbox" value="Top Soil"> Top Soil</label>
+      <label><input type="checkbox" value="Rock"> Rock</label>
+      <label><input type="checkbox" value="Road Base"> Road Base</label>
+      <label><input type="checkbox" value="Concrete"> Concrete</label>
+      <label><input type="checkbox" value="Asphalt"> Asphalt</label>
+      <label><input type="checkbox" value="Inert"> Inert</label>
+    </div>
+    <input id="volume" placeholder="Volume">
     <button onclick="addProject()">Add Project</button>
     <button onclick="resetProjects()">Reset Projects</button>
   </div>
@@ -49,7 +68,7 @@
     <h3>Project List</h3>
     <table>
       <thead>
-        <tr><th>Client</th><th>Type</th><th>Status</th><th>Plus Code</th></tr>
+        <tr><th>Client</th><th>Project Name</th><th>Address</th><th>Import/Export</th><th>Material Type</th><th>Volume</th></tr>
       </thead>
       <tbody id="projectTableBody"></tbody>
     </table>
@@ -60,22 +79,7 @@
     const markers = [];
     const geocoder = new google.maps.Geocoder();
 
-    const defaultProjects = [
-      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "PW7R+W73 Joyner, Queensland" },
-      { client: "Sunshine Coast Civil", projectType: "Subdivision", status: "Live", plusCode: "MXF9+PJX Brendale, Queensland" },
-      { client: "Hall Contracting", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" },
-      { client: "SGQ", projectType: "Bulk Earthworks", status: "Live", plusCode: "M28X+4H Narangba, Queensland" },
-      { client: "Bellwether Contractors", projectType: "Rail", status: "Tendering", plusCode: "R2V6+F4 Beerwah, Queensland" },
-      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "V2VC+V9W Baringa, Queensland" },
-      { client: "Hutchinson Builders", projectType: "Commercial", status: "Live", plusCode: "W2J6+86 Sippy Downs, Queensland" },
-      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "QX8H+GPW Palmview, Queensland" },
-      { client: "Stockland", projectType: "Bulk Earthworks", status: "Live", plusCode: "RW94+HCW Aura, Queensland" },
-      { client: "Schulz", projectType: "Rural Dam", status: "Pending", plusCode: "9VHH+G8K Eudlo, Queensland" },
-      { client: "Bellwether Contractors", projectType: "Bulk Earthworks", status: "Live", plusCode: "RWX3+R2 Aura, Queensland" },
-      { client: "Mooloolah Contracting", projectType: "Rural Dam", status: "Live", plusCode: "8VJ9+PW Landsborough, Queensland" },
-      { client: "Dynamic Excavations", projectType: "Commercial", status: "Pending", plusCode: "R2MH+Q2 Caloundra West, Queensland" },
-      { client: "Midson", projectType: "Commercial", status: "Pending", plusCode: "MX8F+46 Maroochydore, Queensland" }
-    ];
+    const defaultProjects = [];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -99,23 +103,23 @@
 
       projects.forEach(proj => {
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${proj.client}</td><td>${proj.projectType}</td><td>${proj.status}</td><td>${proj.plusCode}</td>`;
+        row.innerHTML = `<td>${proj.client}</td><td>${proj.projectName}</td><td>${proj.address}</td><td>${proj.importExport}</td><td>${proj.materialType}</td><td>${proj.volume}</td>`;
         document.getElementById("projectTableBody").appendChild(row);
 
-        geocoder.geocode({ address: proj.plusCode }, (results, status) => {
+        geocoder.geocode({ address: proj.address }, (results, status) => {
           if (status === "OK") {
             const marker = new google.maps.Marker({
               map,
               position: results[0].geometry.location,
-              title: proj.client
+              title: proj.projectName
             });
             const info = new google.maps.InfoWindow({
-              content: `<b>${proj.client}</b><br>${proj.projectType} - ${proj.status}`
+              content: `<b>${proj.client}</b><br>${proj.projectName}<br>${proj.address}`
             });
             marker.addListener("click", () => info.open(map, marker));
             markers.push(marker);
           } else {
-            console.warn("Failed to geocode:", proj.plusCode);
+            console.warn("Failed to geocode:", proj.address);
           }
         });
       });
@@ -123,21 +127,30 @@
 
     function addProject() {
       const client = document.getElementById("client").value.trim();
-      const projectType = document.getElementById("projectType").value.trim();
-      const status = document.getElementById("status").value.trim();
-      const plusCode = document.getElementById("plusCode").value.trim();
+      const projectName = document.getElementById("projectName").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const importExport = document.getElementById("importExport").value;
+      const volume = document.getElementById("volume").value.trim();
 
-      if (!client || !projectType || !status || !plusCode) return alert("All fields are required.");
+      const materialType = Array.from(document.querySelectorAll('#materialTypeOptions input[type=checkbox]:checked'))
+        .map(cb => cb.value)
+        .join(', ');
 
-      const newProj = { client, projectType, status, plusCode };
+      if (!client || !projectName || !address || !importExport || !materialType || !volume) {
+        return alert("All fields are required.");
+      }
+
+      const newProj = { client, projectName, address, importExport, materialType, volume };
       projects.push(newProj);
       localStorage.setItem("projects", JSON.stringify(projects));
       renderProjects();
 
       document.getElementById("client").value = "";
-      document.getElementById("projectType").value = "";
-      document.getElementById("status").value = "";
-      document.getElementById("plusCode").value = "";
+      document.getElementById("projectName").value = "";
+      document.getElementById("address").value = "";
+      document.getElementById("importExport").value = "";
+      document.getElementById("volume").value = "";
+      document.querySelectorAll('#materialTypeOptions input[type=checkbox]').forEach(cb => cb.checked = false);
     }
 
     function resetProjects() {
