@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CRMmap with Project Form and List</title>
+  <title>CRMmap</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&callback=initMap" async defer></script>
   <style>
     body {
@@ -13,7 +13,7 @@
       background: #f4f4f4;
       border-bottom: 1px solid #ccc;
     }
-    #form input, #form select, #form button {
+    #form input, #form button {
       margin: 5px;
       padding: 5px;
     }
@@ -23,16 +23,15 @@
     }
     #project-list {
       padding: 10px;
-      background: #ffffff;
+      background: #fff;
     }
     #project-list table {
       width: 100%;
       border-collapse: collapse;
     }
     #project-list th, #project-list td {
-      padding: 8px;
       border: 1px solid #ccc;
-      text-align: left;
+      padding: 8px;
     }
   </style>
 </head>
@@ -43,27 +42,23 @@
     <input id="status" placeholder="Status">
     <input id="plusCode" placeholder="Plus Code">
     <button onclick="addProject()">Add Project</button>
-  <button onclick="resetProjects()">Reset Projects</button>
+    <button onclick="resetProjects()">Reset Projects</button>
   </div>
   <div id="map"></div>
   <div id="project-list">
     <h3>Project List</h3>
     <table>
       <thead>
-        <tr>
-          <th>Client</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Plus Code</th>
-        </tr>
+        <tr><th>Client</th><th>Type</th><th>Status</th><th>Plus Code</th></tr>
       </thead>
       <tbody id="projectTableBody"></tbody>
     </table>
   </div>
   <script>
     let map;
-    const geocoder = new google.maps.Geocoder();
+    let projects = [];
     const markers = [];
+    const geocoder = new google.maps.Geocoder();
 
     const defaultProjects = [
       { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "PW7R+W73 Joyner, Queensland" },
@@ -79,106 +74,78 @@
       { client: "Bellwether Contractors", projectType: "Bulk Earthworks", status: "Live", plusCode: "RWX3+R2 Aura, Queensland" },
       { client: "Mooloolah Contracting", projectType: "Rural Dam", status: "Live", plusCode: "8VJ9+PW Landsborough, Queensland" },
       { client: "Dynamic Excavations", projectType: "Commercial", status: "Pending", plusCode: "R2MH+Q2 Caloundra West, Queensland" },
-      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" },
       { client: "Midson", projectType: "Commercial", status: "Pending", plusCode: "MX8F+46 Maroochydore, Queensland" }
     ];
-
-    let projects = [];
-
-    function loadProjectsToMapAndTable() {
-      document.getElementById("projectTableBody").innerHTML = "";
-      markers.forEach(marker => marker.setMap(null));
-      markers.length = 0;
-
-      projects.forEach(proj => {
-        placeMarker(proj);
-        addToTable(proj);
-      });
-    }
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: -27.4, lng: 152.9 }
       });
-
-      const savedProjects = localStorage.getItem('projects');
-      if (savedProjects) {
-        projects = JSON.parse(savedProjects);
-      } else {
-        projects = [...defaultProjects];
-        localStorage.setItem('projects', JSON.stringify(projects));
-      }
-
-      loadProjectsToMapAndTable();
+      loadProjects();
     }
 
-    function addProject() {
-      const client = document.getElementById('client').value.trim();
-      const projectType = document.getElementById('projectType').value.trim();
-      const status = document.getElementById('status').value.trim();
-      const plusCode = document.getElementById('plusCode').value.trim();
-
-      if (!client || !projectType || !status || !plusCode) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      const newProject = { client, projectType, status, plusCode };
-      projects.push(newProject);
-      localStorage.setItem('projects', JSON.stringify(projects));
-
-      placeMarker(newProject);
-      addToTable(newProject);
-
-      document.getElementById('client').value = '';
-      document.getElementById('projectType').value = '';
-      document.getElementById('status').value = '';
-      document.getElementById('plusCode').value = '';
+    function loadProjects() {
+      const saved = localStorage.getItem("projects");
+      projects = saved ? JSON.parse(saved) : [...defaultProjects];
+      if (!saved) localStorage.setItem("projects", JSON.stringify(projects));
+      renderProjects();
     }
 
-    function placeMarker(project) {
-      geocoder.geocode({ address: project.plusCode }, (results, status) => {
-        if (status === "OK" && results[0]) {
-          const marker = new google.maps.Marker({
-            map: map,
-            position: results[0].geometry.location,
-            title: project.client
-          });
+    function renderProjects() {
+      document.getElementById("projectTableBody").innerHTML = "";
+      markers.forEach(m => m.setMap(null));
+      markers.length = 0;
 
-          markers.push(marker);
+      projects.forEach(proj => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${proj.client}</td><td>${proj.projectType}</td><td>${proj.status}</td><td>${proj.plusCode}</td>`;
+        document.getElementById("projectTableBody").appendChild(row);
 
-          const info = new google.maps.InfoWindow({
-            content: `<b>${project.client}</b><br>${project.projectType} - ${project.status}<br>${project.plusCode}`
-          });
-
-          marker.addListener("click", () => info.open(map, marker));
-        } else {
-          console.warn("Geocode failed for:", project.plusCode);
-        }
+        geocoder.geocode({ address: proj.plusCode }, (results, status) => {
+          if (status === "OK") {
+            const marker = new google.maps.Marker({
+              map,
+              position: results[0].geometry.location,
+              title: proj.client
+            });
+            const info = new google.maps.InfoWindow({
+              content: `<b>${proj.client}</b><br>${proj.projectType} - ${proj.status}`
+            });
+            marker.addListener("click", () => info.open(map, marker));
+            markers.push(marker);
+          } else {
+            console.warn("Failed to geocode:", proj.plusCode);
+          }
+        });
       });
     }
 
-    function addToTable(project) {
-      const tableBody = document.getElementById("projectTableBody");
-      const row = document.createElement("tr");
+    function addProject() {
+      const client = document.getElementById("client").value.trim();
+      const projectType = document.getElementById("projectType").value.trim();
+      const status = document.getElementById("status").value.trim();
+      const plusCode = document.getElementById("plusCode").value.trim();
 
-      row.innerHTML = `
-        <td>${project.client}</td>
-        <td>${project.projectType}</td>
-        <td>${project.status}</td>
-        <td>${project.plusCode}</td>
-      `;
+      if (!client || !projectType || !status || !plusCode) return alert("All fields are required.");
 
-      tableBody.appendChild(row);
+      const newProj = { client, projectType, status, plusCode };
+      projects.push(newProj);
+      localStorage.setItem("projects", JSON.stringify(projects));
+      renderProjects();
+
+      document.getElementById("client").value = "";
+      document.getElementById("projectType").value = "";
+      document.getElementById("status").value = "";
+      document.getElementById("plusCode").value = "";
     }
 
     function resetProjects() {
-  if (confirm("Are you sure you want to reset the project list? This will remove all custom entries.")) {
-    localStorage.removeItem('projects');
-    location.reload();
-  }
-}
+      if (confirm("This will erase all custom entries. Proceed?")) {
+        localStorage.removeItem("projects");
+        location.reload();
+      }
+    }
 
     window.initMap = initMap;
   </script>
