@@ -43,6 +43,7 @@
     <input id="status" placeholder="Status">
     <input id="plusCode" placeholder="Plus Code">
     <button onclick="addProject()">Add Project</button>
+  <button onclick="resetProjects()">Reset Projects</button>
   </div>
   <div id="map"></div>
   <div id="project-list">
@@ -171,6 +172,13 @@
 
       tableBody.appendChild(row);
     }
+
+    function resetProjects() {
+  if (confirm("Are you sure you want to reset the project list? This will remove all custom entries.")) {
+    localStorage.removeItem('projects');
+    location.reload();
+  }
+}
 
     window.initMap = initMap;
   </script>
