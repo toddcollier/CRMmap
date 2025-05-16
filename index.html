@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>CRMmap with Project Form and List</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&callback=initMap" async defer></script>
   <style>
     body {
       margin: 0;
@@ -151,20 +151,6 @@
 
       tableBody.appendChild(row);
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof google !== 'undefined') {
-        initMap();
-      } else {
-        // Wait a bit and retry if map script hasn’t loaded yet
-        const interval = setInterval(() => {
-          if (typeof google !== 'undefined') {
-            clearInterval(interval);
-            initMap();
-          }
-        }, 200);
-      }
-    });
   </script>
 </body>
 </html>
