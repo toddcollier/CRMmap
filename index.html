@@ -62,7 +62,8 @@
   <script>
     let map;
     const geocoder = new google.maps.Geocoder();
-    const projects = [
+
+    const defaultProjects = [
       { client: "Terreco", projectType: "Tip", status: "Live", plusCode: "P238+7Q Bald Hills, Queensland" },
       { client: "Crushtech", projectType: "Tip", status: "Live", plusCode: "M2X8+J6, Bald Hills QLD 4036" },
       { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "PW7R+W73 Joyner, Queensland" },
@@ -70,13 +71,25 @@
       { client: "Hall Contracting", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" }
     ];
 
+    function getStoredProjects() {
+      const saved = localStorage.getItem('projects');
+      if (saved) return JSON.parse(saved);
+      localStorage.setItem('projects', JSON.stringify(defaultProjects));
+      return [...defaultProjects];
+    }
+
+    function saveProjects(projects) {
+      localStorage.setItem('projects', JSON.stringify(projects));
+    }
+
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: -27.4, lng: 152.9 }
       });
 
-      projects.forEach(proj => {
+      const storedProjects = getStoredProjects();
+      storedProjects.forEach(proj => {
         placeMarker(proj);
         addToTable(proj);
       });
@@ -89,6 +102,10 @@
       const plusCode = document.getElementById('plusCode').value;
 
       const newProject = { client, projectType, status, plusCode };
+      const storedProjects = getStoredProjects();
+      storedProjects.push(newProject);
+      saveProjects(storedProjects);
+
       placeMarker(newProject);
       addToTable(newProject);
 
