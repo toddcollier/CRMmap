@@ -89,13 +89,9 @@
       const autocomplete = new google.maps.places.Autocomplete(addressInput, { componentRestrictions: { country: 'au' } });
       autocomplete.addListener("place_changed", function () {
         const place = autocomplete.getPlace();
-        if (!place || !place.formatted_address) {
-          console.warn("Autocomplete place is invalid", place);
-          return;
+        if (place && place.formatted_address) {
+          addressInput.value = place.formatted_address;
         }
-        // force the selection into the input field
-        addressInput.value = place.formatted_address;
-        addressInput.setAttribute("data-selected", "true");
       });
 
       map = new google.maps.Map(document.getElementById("map"), {
@@ -119,9 +115,16 @@
       markers.forEach(m => m.setMap(null));
       markers.length = 0;
 
-      projects.forEach(proj => {
+      projects.forEach((proj, index) => {
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${proj.client}</td><td>${proj.projectName}</td><td>${proj.address}</td><td>${proj.importExport}</td><td>${proj.materialType}</td><td>${proj.volume}</td>`;
+        row.innerHTML = `
+          <td contenteditable oninput="updateField(${index}, 'client', this.textContent)">${proj.client}</td>
+          <td contenteditable oninput="updateField(${index}, 'projectName', this.textContent)">${proj.projectName}</td>
+          <td contenteditable oninput="updateField(${index}, 'address', this.textContent)">${proj.address}</td>
+          <td contenteditable oninput="updateField(${index}, 'importExport', this.textContent)">${proj.importExport}</td>
+          <td contenteditable oninput="updateField(${index}, 'materialType', this.textContent)">${proj.materialType}</td>
+          <td contenteditable oninput="updateField(${index}, 'volume', this.textContent)">${proj.volume}</td>
+        `;
         document.getElementById("projectTableBody").appendChild(row);
 
         geocoder.geocode({ address: proj.address }, (results, status) => {
@@ -146,11 +149,7 @@
     function addProject() {
       const client = document.getElementById("client").value.trim();
       const projectName = document.getElementById("projectName").value.trim();
-      const addressInputEl = document.getElementById("address");
-      const address = addressInputEl.value.trim();
-      if (!addressInputEl.getAttribute("data-selected")) {
-        return alert("Please select a valid address from the suggestions.");
-      }
+      const address = document.getElementById("address").value.trim();
       const importExport = document.getElementById("importExport").value;
       const volume = document.getElementById("volume").value.trim();
 
@@ -170,8 +169,7 @@
       document.getElementById("client").value = "";
       document.getElementById("projectName").value = "";
       document.getElementById("address").value = "";
-      document.getElementById("address").removeAttribute("data-selected");
-      document.getElementById("importExport").value = "";
+            document.getElementById("importExport").value = "";
       document.getElementById("volume").value = "";
       document.querySelectorAll('#materialDropdown input[type=checkbox]').forEach(cb => cb.checked = false);
     }
@@ -186,6 +184,12 @@
     function toggleMaterialDropdown() {
       const dropdown = document.getElementById("materialDropdown");
       dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+
+    function updateField(index, field, value) {
+      projects[index][field] = value.trim();
+      localStorage.setItem("projects", JSON.stringify(projects));
+      if (field === 'address') renderProjects();
     }
 
     window.initMap = initMap;
