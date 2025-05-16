@@ -1,78 +1,135 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CRMmap</title>
+  <title>CRMmap with Project Form and List</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&callback=initMap" async defer></script>
   <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #form {
+      padding: 10px;
+      background: #f4f4f4;
+      border-bottom: 1px solid #ccc;
+    }
+    #form input, #form select, #form button {
+      margin: 5px;
+      padding: 5px;
+    }
     #map {
-      height: 100vh;
+      height: 70vh;
       width: 100%;
+    }
+    #project-list {
+      padding: 10px;
+      background: #ffffff;
+    }
+    #project-list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #project-list th, #project-list td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
     }
   </style>
 </head>
 <body>
+  <div id="form">
+    <input id="client" placeholder="Client">
+    <input id="projectType" placeholder="Project Type">
+    <input id="status" placeholder="Status">
+    <input id="plusCode" placeholder="Plus Code">
+    <button onclick="addProject()">Add Project</button>
+  </div>
   <div id="map"></div>
+  <div id="project-list">
+    <h3>Project List</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Plus Code</th>
+        </tr>
+      </thead>
+      <tbody id="projectTableBody"></tbody>
+    </table>
+  </div>
   <script>
+    let map;
+    const geocoder = new google.maps.Geocoder();
     const projects = [
-      {
-        client: "Terreco",
-        projectType: "Tip",
-        status: "Live",
-        plusCode: "P238+7Q Bald Hills, Queensland"
-      },
-      {
-        client: "Crushtech",
-        projectType: "Tip",
-        status: "Live",
-        plusCode: "M2X8+J6, Bald Hills QLD 4036"
-      },
-      {
-        client: "Shadforth",
-        projectType: "Subdivision",
-        status: "Live",
-        plusCode: "PW7R+W73 Joyner, Queensland"
-      },
-      {
-        client: "Sunshine Coast Civil",
-        projectType: "Subdivision",
-        status: "Live",
-        plusCode: "MXF9+PJX Brendale, Queensland"
-      },
-      {
-        client: "Hall Contracting",
-        projectType: "Subdivision",
-        status: "Live",
-        plusCode: "VXMH+9RM Morayfield, Queensland"
-      }
+      { client: "Terreco", projectType: "Tip", status: "Live", plusCode: "P238+7Q Bald Hills, Queensland" },
+      { client: "Crushtech", projectType: "Tip", status: "Live", plusCode: "M2X8+J6, Bald Hills QLD 4036" },
+      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "PW7R+W73 Joyner, Queensland" },
+      { client: "Sunshine Coast Civil", projectType: "Subdivision", status: "Live", plusCode: "MXF9+PJX Brendale, Queensland" },
+      { client: "Hall Contracting", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" }
     ];
 
     function initMap() {
-      const map = new google.maps.Map(document.getElementById("map"), {
+      map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: -27.4, lng: 152.9 }
       });
 
-      const geocoder = new google.maps.Geocoder();
-
-      projects.forEach((proj) => {
-        geocoder.geocode({ address: proj.plusCode }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            const marker = new google.maps.Marker({
-              map: map,
-              position: results[0].geometry.location,
-              title: proj.client
-            });
-
-            const info = new google.maps.InfoWindow({
-              content: `<b>${proj.client}</b><br>${proj.projectType} - ${proj.status}<br>${proj.plusCode}`
-            });
-
-            marker.addListener("click", () => info.open(map, marker));
-          } else {
-            console.warn("Failed to geocode:", proj.plusCode);
-          }
-        });
+      projects.forEach(proj => {
+        placeMarker(proj);
+        addToTable(proj);
       });
+    }
+
+    function addProject() {
+      const client = document.getElementById('client').value;
+      const projectType = document.getElementById('projectType').value;
+      const status = document.getElementById('status').value;
+      const plusCode = document.getElementById('plusCode').value;
+
+      const newProject = { client, projectType, status, plusCode };
+      placeMarker(newProject);
+      addToTable(newProject);
+
+      document.getElementById('client').value = '';
+      document.getElementById('projectType').value = '';
+      document.getElementById('status').value = '';
+      document.getElementById('plusCode').value = '';
+    }
+
+    function placeMarker(project) {
+      geocoder.geocode({ address: project.plusCode }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location,
+            title: project.client
+          });
+
+          const info = new google.maps.InfoWindow({
+            content: `<b>${project.client}</b><br>${project.projectType} - ${project.status}<br>${project.plusCode}`
+          });
+
+          marker.addListener("click", () => info.open(map, marker));
+        } else {
+          console.warn("Geocode failed for:", project.plusCode);
+        }
+      });
+    }
+
+    function addToTable(project) {
+      const tableBody = document.getElementById("projectTableBody");
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${project.client}</td>
+        <td>${project.projectType}</td>
+        <td>${project.status}</td>
+        <td>${project.plusCode}</td>
+      `;
+
+      tableBody.appendChild(row);
     }
   </script>
 </body>
