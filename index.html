@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Earthmoving Project Map</title>
+ <script src="https://maps.googleapis.com/maps/api/js?key=your_real_key_here"></script>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    const projects = [
+      {
+        client: "Terreco",
+        projectType: "Tip",
+        status: "Live",
+        plusCode: "P238+7Q Bald Hills, Queensland"
+      },
+      {
+        client: "Crushtech",
+        projectType: "Tip",
+        status: "Live",
+        plusCode: "M2X8+J6, Bald Hills QLD 4036"
+      },
+      {
+        client: "Shadforth",
+        projectType: "Subdivision",
+        status: "Live",
+        plusCode: "PW7R+W73 Joyner, Queensland"
+      },
+      {
+        client: "Sunshine Coast Civil",
+        projectType: "Subdivision",
+        status: "Live",
+        plusCode: "MXF9+PJX Brendale, Queensland"
+      },
+      {
+        client: "Hall Contracting",
+        projectType: "Subdivision",
+        status: "Live",
+        plusCode: "VXMH+9RM Morayfield, Queensland"
+      }
+    ];
+
+    function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 10,
+        center: { lat: -27.4, lng: 152.9 }, // Roughly Brisbane
+      });
+
+      const geocoder = new google.maps.Geocoder();
+
+      projects.forEach((proj) => {
+        geocoder.geocode({ address: proj.plusCode }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const marker = new google.maps.Marker({
+              map: map,
+              position: results[0].geometry.location,
+              title: proj.client
+            });
+
+            const info = new google.maps.InfoWindow({
+              content: `<b>${proj.client}</b><br>${proj.projectType} - ${proj.status}<br>${proj.plusCode}`
+            });
+
+            marker.addListener("click", () => info.open(map, marker));
+          } else {
+            console.warn("Failed to geocode:", proj.plusCode);
+          }
+        });
+      });
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>
