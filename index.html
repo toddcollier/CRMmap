@@ -87,11 +87,12 @@
     function initMap() {
       const addressInput = document.getElementById("address");
       const autocomplete = new google.maps.places.Autocomplete(addressInput, { componentRestrictions: { country: 'au' } });
-      autocomplete.setFields(["formatted_address"]);
       autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
         if (place && place.formatted_address) {
           addressInput.value = place.formatted_address;
+        } else if (place && place.name) {
+          addressInput.value = place.name;
         }
       });
 
