@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>CRMmap</title>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&callback=initMap" async defer></script>
   <style>
     #map {
       height: 100vh;
@@ -49,7 +49,7 @@
     function initMap() {
       const map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
-        center: { lat: -27.4, lng: 152.9 }, // Roughly Brisbane
+        center: { lat: -27.4, lng: 152.9 }
       });
 
       const geocoder = new google.maps.Geocoder();
@@ -74,8 +74,6 @@
         });
       });
     }
-
-    window.onload = initMap;
   </script>
 </body>
 </html>
