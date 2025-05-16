@@ -117,7 +117,13 @@
 
       projects.forEach((proj, index) => {
         const row = document.createElement("tr");
-        row.innerHTML = `
+        row.innerHTML = `
+          <td>${proj.client}</td>
+          <td>${proj.projectName}</td>
+          <td>${proj.address}</td>
+          <td>${proj.importExport}</td>
+          <td>${proj.materialType}</td>
+          <td>${proj.volume}</td>
           <td><button onclick="startEdit(${index})">Edit</button></td>`;
         document.getElementById("projectTableBody").appendChild(row);
 
