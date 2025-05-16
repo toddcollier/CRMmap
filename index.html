@@ -196,33 +196,59 @@
   const proj = projects[index];
   const row = document.getElementById("projectTableBody").children[index];
 
-  const materialTypes = ['Clean Fill','Unsuitable','Top Soil','Rock','Road Base','Concrete','Asphalt','Inert'];
-  const materialOptions = materialTypes.map(type => {
-    const selected = proj.materialType.includes(type) ? 'selected' : '';
-    return `<option value="${type}" ${selected}>${type}</option>`;
-  }).join('');
-
   row.innerHTML = `
-    <td><input value="${proj.client}" onchange="updateField(${index}, 'client', this.value)"></td>
-    <td><input value="${proj.projectName}" onchange="updateField(${index}, 'projectName', this.value)"></td>
-    <td><input value="${proj.address}" onchange="updateField(${index}, 'address', this.value)"></td>
+    <td><input id="edit-client-${index}" value="${proj.client}"></td>
+    <td><input id="edit-projectName-${index}" value="${proj.projectName}"></td>
+    <td><input id="edit-address-${index}" value="${proj.address}"></td>
     <td>
-      <select onchange="updateField(${index}, 'importExport', this.value)">
+      <select id="edit-importExport-${index}">
         <option value="">Select Import/Export</option>
         <option value="Import" ${proj.importExport === 'Import' ? 'selected' : ''}>Import</option>
         <option value="Export" ${proj.importExport === 'Export' ? 'selected' : ''}>Export</option>
       </select>
     </td>
     <td>
-      <select multiple onchange="updateField(${index}, 'materialType', Array.from(this.selectedOptions).map(o => o.value).join(', '))">
-        ${materialOptions}
-      </select>
+      <div style="position: relative; display: inline-block;">
+        <button type="button" onclick="toggleEditMaterialDropdown(${index})">Select Material Type(s)</button>
+        <div id="edit-materialDropdown-${index}" style="display:none; position: absolute; background: #fff; border: 1px solid #ccc; padding: 10px; z-index: 10;">
+          <strong>Material Type:</strong><br>
+          ${['Clean Fill','Unsuitable','Top Soil','Rock','Road Base','Concrete','Asphalt','Inert'].map(type => `
+            <label><input type="checkbox" value="${type}" ${proj.materialType.includes(type) ? 'checked' : ''}> ${type}</label><br>`).join('')}
+        </div>
+      </div>
     </td>
-    <td><input value="${proj.volume}" onchange="updateField(${index}, 'volume', this.value)"></td>
-    <td><button onclick="renderProjects()">Done</button></td>
+    <td><input id="edit-volume-${index}" value="${proj.volume}"></td>
+    <td><button onclick="saveEdit(${index})">Done</button></td>
   `;
-}
+
+  const input = document.getElementById("edit-address-" + index);
+  const autocomplete = new google.maps.places.Autocomplete(input, { componentRestrictions: { country: 'au' } });
+  autocomplete.addListener("place_changed", function () {
+    const place = autocomplete.getPlace();
+    if (place && place.formatted_address) {
+      input.value = place.formatted_address;
     }
+  });
+}
+
+function toggleEditMaterialDropdown(index) {
+  const dropdown = document.getElementById("edit-materialDropdown-" + index);
+  dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+}
+
+function saveEdit(index) {
+  const client = document.getElementById("edit-client-" + index).value.trim();
+  const projectName = document.getElementById("edit-projectName-" + index).value.trim();
+  const address = document.getElementById("edit-address-" + index).value.trim();
+  const importExport = document.getElementById("edit-importExport-" + index).value;
+  const volume = document.getElementById("edit-volume-" + index).value.trim();
+  const materialCheckboxes = document.querySelectorAll(`#edit-materialDropdown-${index} input[type=checkbox]:checked`);
+  const materialType = Array.from(materialCheckboxes).map(cb => cb.value).join(', ');
+
+  projects[index] = { client, projectName, address, importExport, materialType, volume };
+  localStorage.setItem("projects", JSON.stringify(projects));
+  renderProjects();
+}
 
     window.initMap = initMap;
   </script>
