@@ -63,15 +63,26 @@
     let map;
     const geocoder = new google.maps.Geocoder();
     const markers = [];
-    let projects = [];
 
     const defaultProjects = [
-      { client: "Terreco", projectType: "Tip", status: "Live", plusCode: "P238+7Q Bald Hills, Queensland" },
-      { client: "Crushtech", projectType: "Tip", status: "Live", plusCode: "M2X8+J6, Bald Hills QLD 4036" },
       { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "PW7R+W73 Joyner, Queensland" },
       { client: "Sunshine Coast Civil", projectType: "Subdivision", status: "Live", plusCode: "MXF9+PJX Brendale, Queensland" },
-      { client: "Hall Contracting", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" }
+      { client: "Hall Contracting", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" },
+      { client: "SGQ", projectType: "Bulk Earthworks", status: "Live", plusCode: "M28X+4H Narangba, Queensland" },
+      { client: "Bellwether Contractors", projectType: "Rail", status: "Tendering", plusCode: "R2V6+F4 Beerwah, Queensland" },
+      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "V2VC+V9W Baringa, Queensland" },
+      { client: "Hutchinson Builders", projectType: "Commercial", status: "Live", plusCode: "W2J6+86 Sippy Downs, Queensland" },
+      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "QX8H+GPW Palmview, Queensland" },
+      { client: "Stockland", projectType: "Bulk Earthworks", status: "Live", plusCode: "RW94+HCW Aura, Queensland" },
+      { client: "Schulz", projectType: "Rural Dam", status: "Pending", plusCode: "9VHH+G8K Eudlo, Queensland" },
+      { client: "Bellwether Contractors", projectType: "Bulk Earthworks", status: "Live", plusCode: "RWX3+R2 Aura, Queensland" },
+      { client: "Mooloolah Contracting", projectType: "Rural Dam", status: "Live", plusCode: "8VJ9+PW Landsborough, Queensland" },
+      { client: "Dynamic Excavations", projectType: "Commercial", status: "Pending", plusCode: "R2MH+Q2 Caloundra West, Queensland" },
+      { client: "Shadforth", projectType: "Subdivision", status: "Live", plusCode: "VXMH+9RM Morayfield, Queensland" },
+      { client: "Midson", projectType: "Commercial", status: "Pending", plusCode: "MX8F+46 Maroochydore, Queensland" }
     ];
+
+    let projects = [];
 
     function loadProjectsToMapAndTable() {
       document.getElementById("projectTableBody").innerHTML = "";
@@ -90,11 +101,11 @@
         center: { lat: -27.4, lng: 152.9 }
       });
 
-      const saved = localStorage.getItem('projects');
-      if (saved) {
-        projects = JSON.parse(saved);
+      const savedProjects = localStorage.getItem('projects');
+      if (savedProjects) {
+        projects = JSON.parse(savedProjects);
       } else {
-        projects = defaultProjects;
+        projects = [...defaultProjects];
         localStorage.setItem('projects', JSON.stringify(projects));
       }
 
@@ -102,10 +113,15 @@
     }
 
     function addProject() {
-      const client = document.getElementById('client').value;
-      const projectType = document.getElementById('projectType').value;
-      const status = document.getElementById('status').value;
-      const plusCode = document.getElementById('plusCode').value;
+      const client = document.getElementById('client').value.trim();
+      const projectType = document.getElementById('projectType').value.trim();
+      const status = document.getElementById('status').value.trim();
+      const plusCode = document.getElementById('plusCode').value.trim();
+
+      if (!client || !projectType || !status || !plusCode) {
+        alert("Please fill in all fields.");
+        return;
+      }
 
       const newProject = { client, projectType, status, plusCode };
       projects.push(newProject);
