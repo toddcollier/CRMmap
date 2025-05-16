@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>CRMmap</title>
-  &libraries=places" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&libraries=places&callback=initMap" async defer></script>
   <style>
     body {
       margin: 0;
@@ -80,7 +80,7 @@
     let map;
     let projects = [];
     const markers = [];
-    const geocoder = new google.maps.Geocoder();
+    let geocoder;
 
     const defaultProjects = [];
 
@@ -88,10 +88,13 @@
       const addressInput = document.getElementById("address");
       const autocomplete = new google.maps.places.Autocomplete(addressInput, { componentRestrictions: { country: 'au' } });
       autocomplete.setFields(["formatted_address"]);
+
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: -27.4, lng: 152.9 }
       });
+
+      geocoder = new google.maps.Geocoder();
       loadProjects();
     }
 
@@ -138,7 +141,7 @@
       const importExport = document.getElementById("importExport").value;
       const volume = document.getElementById("volume").value.trim();
 
-      const materialType = Array.from(document.querySelectorAll('#materialTypeOptions input[type=checkbox]:checked'))
+      const materialType = Array.from(document.querySelectorAll('#materialDropdown input[type=checkbox]:checked'))
         .map(cb => cb.value)
         .join(', ');
 
@@ -156,7 +159,7 @@
       document.getElementById("address").value = "";
       document.getElementById("importExport").value = "";
       document.getElementById("volume").value = "";
-      document.querySelectorAll('#materialTypeOptions input[type=checkbox]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('#materialDropdown input[type=checkbox]').forEach(cb => cb.checked = false);
     }
 
     function resetProjects() {
