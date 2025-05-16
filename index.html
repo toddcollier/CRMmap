@@ -2,7 +2,15 @@
 <html>
 <head>
   <title>CRMmap</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&libraries=places&callback=initMap" async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&libraries=places&callback=initMap" async defer>function deleteProject(index) {
+  if (confirm("Delete this project?")) {
+    projects.splice(index, 1);
+    localStorage.setItem("projects", JSON.stringify(projects));
+    renderProjects();
+  }
+}
+
+</script>
   <style>
     body {
       margin: 0;
@@ -64,7 +72,7 @@
     </div>
     <input id="volume" placeholder="Volume">
     <button onclick="addProject()">Add Project</button>
-    <button onclick="resetProjects()">Reset Projects</button>
+    
   </div>
   <div id="map"></div>
   <div id="project-list">
@@ -147,38 +155,34 @@
     }
 
     function addProject() {
-      const client = document.getElementById("client").value.trim();
-      const projectName = document.getElementById("projectName").value.trim();
-      const address = document.getElementById("address").value.trim();
-      const importExport = document.getElementById("importExport").value;
-      const volume = document.getElementById("volume").value.trim();
+  const client = document.getElementById("client").value.trim();
+  const projectName = document.getElementById("projectName").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const importExport = document.getElementById("importExport").value;
+  const volume = document.getElementById("volume").value.trim();
 
-      const materialType = Array.from(document.querySelectorAll('#materialDropdown input[type=checkbox]:checked'))
-        .map(cb => cb.value)
-        .join(', ');
+  const materialType = Array.from(document.querySelectorAll('#materialDropdown input[type=checkbox]:checked'))
+    .map(cb => cb.value)
+    .join(', ');
 
-      if (!client || !projectName || !address || !importExport || !materialType || !volume) {
-        return alert("All fields are required.");
-      }
-
-      const newProj = { client, projectName, address, importExport, materialType, volume };
-      projects.push(newProj);
-      localStorage.setItem("projects", JSON.stringify(projects));
-      renderProjects();
-
-      document.getElementById("client").value = "";
-      document.getElementById("projectName").value = "";
-      document.getElementById("address").value = "";
-            document.getElementById("importExport").value = "";
-      document.getElementById("volume").value = "";
-      document.querySelectorAll('#materialDropdown input[type=checkbox]').forEach(cb => cb.checked = false);
-
-    function deleteProject(index) {
-  if (confirm("Delete this project?")) {
-    projects.splice(index, 1);
-    localStorage.setItem("projects", JSON.stringify(projects));
-    renderProjects();
+  if (!client || !projectName || !address || !importExport || !materialType || !volume) {
+    return alert("All fields are required.");
   }
+
+  const newProj = { client, projectName, address, importExport, materialType, volume };
+  projects.push(newProj);
+  localStorage.setItem("projects", JSON.stringify(projects));
+  renderProjects();
+
+  document.getElementById("client").value = "";
+  document.getElementById("projectName").value = "";
+  document.getElementById("address").value = "";
+  document.getElementById("importExport").value = "";
+  document.getElementById("volume").value = "";
+  document.querySelectorAll('#materialDropdown input[type=checkbox]').forEach(cb => cb.checked = false);
+}
+
+    
 }
     }
 
