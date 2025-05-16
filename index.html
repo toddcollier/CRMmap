@@ -87,13 +87,15 @@
     function initMap() {
       const addressInput = document.getElementById("address");
       const autocomplete = new google.maps.places.Autocomplete(addressInput, { componentRestrictions: { country: 'au' } });
-      autocomplete.addListener("place_changed", () => {
+      autocomplete.addListener("place_changed", function () {
         const place = autocomplete.getPlace();
-        if (place && place.formatted_address) {
-          addressInput.value = place.formatted_address;
-        } else if (place && place.name) {
-          addressInput.value = place.name;
+        if (!place || !place.formatted_address) {
+          console.warn("Autocomplete place is invalid", place);
+          return;
         }
+        // force the selection into the input field
+        addressInput.value = place.formatted_address;
+        addressInput.setAttribute("data-selected", "true");
       });
 
       map = new google.maps.Map(document.getElementById("map"), {
@@ -144,7 +146,11 @@
     function addProject() {
       const client = document.getElementById("client").value.trim();
       const projectName = document.getElementById("projectName").value.trim();
-      const address = document.getElementById("address").value.trim();
+      const addressInputEl = document.getElementById("address");
+      const address = addressInputEl.value.trim();
+      if (!addressInputEl.getAttribute("data-selected")) {
+        return alert("Please select a valid address from the suggestions.");
+      }
       const importExport = document.getElementById("importExport").value;
       const volume = document.getElementById("volume").value.trim();
 
@@ -164,6 +170,7 @@
       document.getElementById("client").value = "";
       document.getElementById("projectName").value = "";
       document.getElementById("address").value = "";
+      document.getElementById("address").removeAttribute("data-selected");
       document.getElementById("importExport").value = "";
       document.getElementById("volume").value = "";
       document.querySelectorAll('#materialDropdown input[type=checkbox]').forEach(cb => cb.checked = false);
