@@ -3,7 +3,9 @@
 <head>
   <title>CRMmap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&libraries=places&callback=initMap" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&libraries=places&callback=initMap" async defer></script>
   <style>
     body {
       margin: 0;
@@ -120,6 +122,19 @@
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUArJays1bnNSLTpI5Db0A5OVBCbYdG0c",
+      authDomain: "crmmap-d7852.firebaseapp.com",
+      databaseURL: "https://crmmap-d7852-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "crmmap-d7852",
+      storageBucket: "crmmap-d7852.firebasestorage.app",
+      messagingSenderId: "527964120419",
+      appId: "1:527964120419:web:820e6992ad2472caaddf56"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let map;
     let projects = [];
     const markers = [];
@@ -161,11 +176,11 @@
 
       geocoder = new google.maps.Geocoder();
 
-      const saved = localStorage.getItem("projects");
-      projects = saved ? JSON.parse(saved) : [...defaultProjects];
-      if (!saved) localStorage.setItem("projects", JSON.stringify(projects));
-
-      renderProjects();
+      firebase.database().ref("projects").once("value").then(snapshot => {
+        const data = snapshot.val();
+        projects = data ? Object.values(data) : [];
+        renderProjects();
+      });
     }
 
     function toggleMaterialDropdown() {
@@ -190,7 +205,7 @@
 
       const newProj = { client, projectName, address, importExport, materialType, volume };
       projects.push(newProj);
-      localStorage.setItem("projects", JSON.stringify(projects));
+      firebase.database().ref("projects").set(projects);
       renderProjects();
 
       document.getElementById("client").value = "";
