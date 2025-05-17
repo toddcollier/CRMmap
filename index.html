@@ -3,7 +3,9 @@
 <head>
   <title>CRMmap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js">function loadProjectsFromFirebase() {
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js">
+<script>
+function loadProjectsFromFirebase() {
   firebase.database().ref("projects").once("value").then(snapshot => {
     const data = snapshot.val();
     projects = [];
@@ -15,9 +17,7 @@
     renderProjects();
   });
 }
-
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAd-TysVPwn4y8dPtbdZEWKV9fzBP-ztC4&libraries=places&callback=initMap" async defer></script>
   <style>
     body {
