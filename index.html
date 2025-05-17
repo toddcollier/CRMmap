@@ -264,13 +264,7 @@ function loadProjectsFromFirebase() {
       });
     }
 
-    function updateField(index, field, value) {
-      projects[index][field] = value.trim();
-      localStorage.setItem("projects", JSON.stringify(projects));
-      if (field === 'address') renderProjects();
-    }
-
-    function startEdit(index) {
+        function startEdit(index) {
       const proj = projects[index];
       const row = document.getElementById("projectTableBody").children[index];
 
@@ -323,16 +317,18 @@ function loadProjectsFromFirebase() {
       const materialCheckboxes = document.querySelectorAll(`#edit-materialDropdown-${index} input[type=checkbox]:checked`);
       const materialType = Array.from(materialCheckboxes).map(cb => cb.value).join(', ');
 
-      projects[index] = { client, projectName, address, importExport, materialType, volume };
-      localStorage.setItem("projects", JSON.stringify(projects));
-      renderProjects();
+      const id = projects[index]._id;
+      firebase.database().ref("projects/" + id).update({ client, projectName, address, importExport, materialType, volume }).then(() => {
+        loadProjectsFromFirebase();
+      });
     }
 
     function deleteProject(index) {
       if (confirm("Delete this project?")) {
-        projects.splice(index, 1);
-        localStorage.setItem("projects", JSON.stringify(projects));
-        renderProjects();
+        const id = projects[index]._id;
+        firebase.database().ref("projects/" + id).remove().then(() => {
+          loadProjectsFromFirebase();
+        });
       }
     }
 
