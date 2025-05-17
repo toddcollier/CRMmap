@@ -3,7 +3,8 @@
 <head>
   <title>CRMmap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
 function loadProjectsFromFirebase() {
   firebase.database().ref("projects").once("value").then(snapshot => {
