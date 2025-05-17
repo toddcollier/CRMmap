@@ -178,7 +178,12 @@
 
       firebase.database().ref("projects").once("value").then(snapshot => {
         const data = snapshot.val();
-        projects = data ? Object.values(data) : [];
+        projects = [];
+        if (data) {
+          for (let key in data) {
+            projects.push({ ...data[key], _id: key });
+          }
+        }
         renderProjects();
       });
     }
@@ -204,8 +209,7 @@
       }
 
       const newProj = { client, projectName, address, importExport, materialType, volume };
-      projects.push(newProj);
-      firebase.database().ref("projects").set(projects);
+      firebase.database().ref("projects").push(newProj);
       renderProjects();
 
       document.getElementById("client").value = "";
